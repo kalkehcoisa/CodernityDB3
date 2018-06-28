@@ -153,7 +153,7 @@ class WithRun_Index(HashIndex):
         vals = []
         while True:
             try:
-                d = gen.next()
+                d = next(gen)
             except StopIteration:
                 break
             else:
@@ -185,7 +185,7 @@ class WithRunEdit_Index(HashIndex):
         vals = []
         while True:
             try:
-                d = gen.next()
+                d = next(gen)
             except StopIteration:
                 break
             else:
@@ -955,6 +955,7 @@ class DB_Tests:
         db.add_index(WithRun_Index(db.path, 'run'))
         for x in range(20):
             db.insert(dict(a=x % 2, x=x))
+
         assert db.run('run', 'sum', 0) == 90
         assert db.run('run', 'sum', 1) == 100
         assert db.run('run', 'sum', 2) == 0
