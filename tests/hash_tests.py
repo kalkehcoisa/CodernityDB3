@@ -83,13 +83,13 @@ class WithAIndex(HashIndex):
     def make_key_value(self, data):
         a_val = data.get("a")
         if a_val:
-            if not isinstance(a_val, basestring):
+            if not isinstance(a_val, str):
                 a_val = str(a_val)
             return md5(a_val).digest(), {}
         return None
 
     def make_key(self, key):
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             key = str(key)
         return md5(key).digest()
 

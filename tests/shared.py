@@ -89,13 +89,13 @@ class WithAIndex2(HashIndex):
     def make_key_value(self, data):
         a_val = data.get("a")
         if a_val is not None:
-            if not isinstance(a_val, basestring):
+            if not isinstance(a_val, str):
                 a_val = str(a_val)
                 return md5(a_val).digest(), None
                 return None
 
     def make_key(self, key):
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             key = str(key)
             return md5(key).digest()
 
@@ -111,13 +111,13 @@ class WithAIndex(HashIndex):
     def make_key_value(self, data):
         a_val = data.get("a")
         if a_val is not None:
-            if not isinstance(a_val, basestring):
+            if not isinstance(a_val, str):
                 a_val = str(a_val)
             return md5(a_val).digest(), None
         return None
 
     def make_key(self, key):
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             key = str(key)
         return md5(key).digest()
 
@@ -241,7 +241,7 @@ class DB_Tests:
         doc = dict(a=1)
         db.insert(doc)
         doc2 = doc.copy()
-        doc2['_rev'] = '00000000'
+        doc2['_rev'] = b'00000000'
         with pytest.raises(RevConflict):
             db.update(doc2)
 
