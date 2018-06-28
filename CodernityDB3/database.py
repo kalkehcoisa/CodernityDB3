@@ -133,7 +133,7 @@ class Database(object):
         if old_rev:
             try:
                 rev_num = int(old_rev[:4], 16)
-            except:
+            except Exception:
                 raise RevConflict()
             rev_num += 1
             if rev_num > 65025:
@@ -205,7 +205,7 @@ class Database(object):
             exec(obj, globals())
             ind_obj = globals()[_class.decode()](self.path, name, **ind_kwargs)
             ind_obj._order = int(ind[:2])
-        except:
+        except Exception:
             ind_path = os.path.join(p, ind)
             os.rename(ind_path, ind_path + '_broken')  # rename it instead of removing
 #            os.unlink(os.path.join(p, ind))
@@ -461,7 +461,7 @@ class Database(object):
                 raise PreconditionsException("No path specified")
             p = os.path.join(self.path, '_indexes')
             if os.path.exists(p):
-                raise DatabaseConflict("Cant't create because already exists")
+                raise DatabaseConflict("Can't create because already exists")
             os.makedirs(p)
 
         return self.path
@@ -474,9 +474,9 @@ class Database(object):
         if self.path:
             if not os.path.exists(self.path):
                 self.initialize(self.path)
-        if not 'id' in self.indexes_names and with_id_index:
+        if 'id' not in self.indexes_names and with_id_index:
             import CodernityDB3.hash_index
-            if not 'db_path' in index_kwargs:
+            if 'db_path' not in index_kwargs:
                 index_kwargs['db_path'] = self.path
             index_kwargs['name'] = 'id'
             id_ind = CodernityDB3.hash_index.UniqueHashIndex(**index_kwargs)
@@ -529,7 +529,11 @@ for ID index. You should update that index \
         if self.opened is True:
             raise DatabaseConflict("Already opened")
         self.__open_new(**kwargs)
-        self.__set_main_storage()
+
+        if 'with_id_index' in kwargs and kwargs['with_id_index']:
+            if 'id' in self.indexes_names:
+                self.__set_main_storage()
+
         self.__compat_things()
         self.opened = True
         return self.path
@@ -604,7 +608,7 @@ for ID index. You should update that index \
         for index in reversed(self.indexes[1:]):
             try:
                 self.destroy_index(index)
-            except:
+            except Exception:
                 pass
         if getattr(self, 'id_ind', None) is not None:
             self.id_ind.destroy()  # now destroy id index
@@ -886,7 +890,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         if not '_id' in data:
             try:
                 _id = self.id_ind.create_key()
-            except:
+            except Exception:
                 self.__not_opened()
                 raise DatabaseException("No id?")
         else:
@@ -914,7 +918,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         _rev = data['_rev']
         try:
             _rev = bytes(_rev)
-        except:
+        except Exception:
             self.__not_opened()
             raise PreconditionsException(
                 "`_rev` must be valid bytes object")
@@ -1135,7 +1139,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         try:
             _id = bytes(_id)
             _rev = bytes(_rev)
-        except:
+        except Exception:
             raise PreconditionsException(
                 "`_id` and `_rev` must be valid bytes object")
         data['_deleted'] = True

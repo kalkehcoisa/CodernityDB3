@@ -374,7 +374,7 @@ class DB_Tests:
             del inserted[doc['_id']]
             try:
                 del updated[doc['_id']]
-            except:
+            except Exception:
                 pass
             return True
 

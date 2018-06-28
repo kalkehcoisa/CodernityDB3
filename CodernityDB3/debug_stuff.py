@@ -135,7 +135,7 @@ def database_step_by_step(db_obj, path=None):
             if funct_name == 'insert':
                 try:
                     res = f(*args, **kwargs)
-                except:
+                except Exception:
                     packed = json.dumps((funct_name,
                                          meth_args, kwargs_copy, None))
                     f_obj.write('%s\n' % packed)
@@ -179,7 +179,7 @@ def database_from_steps(db_obj, path):
             if name == 'insert':
                 try:
                     line[1][0].pop('_rev')
-                except:
+                except Exception:
                     pass
             elif name in ('delete', 'update'):
                 el = db_obj.get('id', line[1][0]['_id'])
@@ -203,7 +203,7 @@ def database_from_steps(db_obj, path):
 #    data['_id'] = _id
 #    try:
 #        _id = bytes(_id)
-#    except:
+#    except Exception:
 #        raise DatabaseException("`_id` must be valid bytes object")
 #    self._insert_indexes(_id, _rev, data)
 #    ret = {'_id': _id, '_rev': _rev}

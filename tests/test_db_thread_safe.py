@@ -83,7 +83,7 @@ class Test_Threads(object):
                 try:
                     db.update(doc)
 #                    pass
-                except:
+                except Exception:
                     i += 1
                     if i > 100:
                         return False

@@ -173,14 +173,14 @@ class Index(object):
         try:
             self.buckets.flush()
             self.storage.flush()
-        except:
+        except Exception:
             pass
 
     def fsync(self):
         try:
             os.fsync(self.buckets.fileno())
             self.storage.fsync()
-        except:
+        except Exception:
             pass
 
     def update_with_storage(self, doc_id, key, value):

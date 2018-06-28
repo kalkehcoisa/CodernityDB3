@@ -16,12 +16,14 @@
 # limitations under the License.
 
 
-from CodernityDB3.index import (Index,
-                               IndexException,
-                               DocIdNotFound,
-                               ElemNotFound,
-                               TryReindexException,
-                               IndexPreconditionsException)
+from CodernityDB3.index import (
+    Index,
+    IndexException,
+    DocIdNotFound,
+    ElemNotFound,
+    TryReindexException,
+    IndexPreconditionsException
+)
 
 import os
 import marshal
@@ -75,6 +77,7 @@ class IU_HashIndex(Index):
             db_path = db_path.encode()
         if isinstance(name, str):
             name = name.encode()
+
 
         if key_format and '{key}' in entry_line_format:
             entry_line_format = entry_line_format.replace('{key}', key_format)
@@ -283,7 +286,7 @@ class IU_HashIndex(Index):
             data = self.buckets.read(self.entry_line_size)
             try:
                 l_doc_id, l_key, start, size, status, _next = self.entry_struct.unpack(data)
-            except:
+            except Exception:
                 raise DocIdNotFound(
                     "Doc_id '%s' for '%s' not found" % (doc_id, key))
             if l_doc_id == doc_id and l_key == key:  # added for consistency
@@ -332,7 +335,8 @@ class IU_HashIndex(Index):
             location = self.bucket_struct.unpack(curr_data)[0]
         else:
             raise ElemNotFound("Location '%s' not found" % doc_id)
-        found_at, _doc_id, _key, start, size, status, _next = self._locate_doc_id(doc_id, key, location)
+        found_at, _doc_id, _key, start, size, status, _next = self._locate_doc_id(
+            doc_id, key, location)
         self.buckets.seek(found_at)
         self.buckets.write(self.entry_struct.pack(doc_id,
                                                   key,
@@ -366,7 +370,8 @@ class IU_HashIndex(Index):
         if location:
             # last key with that hash
             try:
-                found_at, _doc_id, _key, _start, _size, _status, _next = self._locate_doc_id(doc_id, key, location)
+                found_at, _doc_id, _key, _start, _size, _status, _next = self._locate_doc_id(
+                    doc_id, key, location)
             except DocIdNotFound:
                 found_at, _doc_id, _key, _start, _size, _status, _next = self._find_place(location)
                 self.buckets.seek(0, 2)
@@ -426,7 +431,8 @@ class IU_HashIndex(Index):
         # Fix types
         if isinstance(key, str):
             key = key.encode()
-        return self._find_key(self.make_key(key))
+        mkey = self.make_key(key)
+        return self._find_key(mkey)
 
     def get_many(self, key, limit=1, offset=0):
         return self._find_key_many(self.make_key(key), limit, offset)
@@ -507,7 +513,8 @@ class IU_HashIndex(Index):
             # case happens when trying to delete element with new index key in data
             # after adding new index to database without reindex
             raise TryReindexException()
-        found_at, _doc_id, _key, start, size, status, _next = self._locate_doc_id(doc_id, key, location)
+        found_at, _doc_id, _key, start, size, status, _next = self._locate_doc_id(
+            doc_id, key, location)
         self.buckets.seek(found_at)
         self.buckets.write(self.entry_struct.pack(doc_id,
                                                   key,
@@ -838,7 +845,7 @@ class IU_UniqueHashIndex(IU_HashIndex):
         _id = data['_id']
         try:
             _id = data['_id'].encode()
-        except:
+        except Exception:
             raise IndexPreconditionsException(
                 "_id must be valid string/bytes object")
         if len(_id) != 32:
