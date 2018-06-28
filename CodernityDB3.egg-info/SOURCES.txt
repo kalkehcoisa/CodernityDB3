@@ -1,5 +1,6 @@
 MANIFEST.in
 README.rst
+setup.cfg
 setup.py
 CodernityDB3/__init__.py
 CodernityDB3/database.py
@@ -26,4 +27,5 @@ CodernityDB3/tree_index.py
 CodernityDB3.egg-info/PKG-INFO
 CodernityDB3.egg-info/SOURCES.txt
 CodernityDB3.egg-info/dependency_links.txt
+CodernityDB3.egg-info/requires.txt
 CodernityDB3.egg-info/top_level.txt

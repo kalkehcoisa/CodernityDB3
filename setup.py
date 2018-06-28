@@ -35,30 +35,39 @@ with open('README.rst') as f:
     L_DESCR = f.read()
 
 requires = [
+    'gevent==1.3.4'
 ]
 
 keywords = ' '.join(('database', 'python', 'nosql', 'key-value', 'key/value', 'db'))
 
-setup(name='CodernityDB3',
-      version=__version__,
-      description="Python 3 port of pure python, fast, schema-less, NoSQL database",
-      long_description=L_DESCR,
-      keywords=keywords,
-      author='cr0hn',
-      author_email='cr0hn@cr0hn.com',
-      url='http://labs.codernity.com/codernitydb',
-      packages=['CodernityDB3'],
-      platforms='any',
-      license=__license__,
-      install_requires=requires,
-      classifiers=[
-      "License :: OSI Approved :: Apache Software License",
-      "Programming Language :: Python",
-      "Programming Language :: Python :: 3.2",
-      "Programming Language :: Python :: 3.4",
-      "Operating System :: OS Independent",
-      "Topic :: Internet",
-      "Topic :: Database",
-      "Topic :: Software Development",
-      "Intended Audience :: Developers",
-      "Development Status :: 4 - Beta"])
+setup(
+    name='CodernityDB3',
+    version=__version__,
+    description="Python 3 port of pure python, fast, schema-less, NoSQL database",
+    long_description=L_DESCR,
+    keywords=keywords,
+    author='cr0hn',
+    author_email='cr0hn@cr0hn.com',
+    url='http://labs.codernity.com/codernitydb',
+    packages=['CodernityDB3'],
+    platforms='any',
+    license=__license__,
+    install_requires=requires,
+    setup_requires=['pytest-runner'],
+    tests_require=[
+        'pytest==3.5.1',
+    ],
+    classifiers=[
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.6",
+        "Operating System :: OS Independent",
+        "Topic :: Internet",
+        "Topic :: Database",
+        "Topic :: Software Development",
+        "Intended Audience :: Developers",
+        "Development Status :: 4 - Beta"
+    ]
+)

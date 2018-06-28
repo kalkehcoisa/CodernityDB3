@@ -266,6 +266,7 @@ Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Programming Language :: Python
 Classifier: Programming Language :: Python :: 3.2
 Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.6
 Classifier: Operating System :: OS Independent
 Classifier: Topic :: Internet
 Classifier: Topic :: Database
