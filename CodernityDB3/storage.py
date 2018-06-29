@@ -141,7 +141,7 @@ class IU_Storage(object):
         return self.save(data)
 
     def get(self, start, size, status='c'):
-        if status == 'd':
+        if status == b'd':
             return None
         else:
             self._f.seek(start)

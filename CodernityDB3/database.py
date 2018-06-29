@@ -131,6 +131,9 @@ class Database(object):
         Increments it + random bytes. On overflow starts from 0 again.
         """
         if old_rev:
+            if isinstance(old_rev, bytes):
+                old_rev = old_rev.decode()
+
             try:
                 rev_num = int(old_rev[:4], 16)
             except Exception:
@@ -700,7 +703,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         :param data: new data
         :param doc_id: document id
         """
-        # should_index = index.make_key_value(data)
+        should_index = index.make_key_value(data)
         try:
             should_index = index.make_key_value(data)
         except Exception as ex:
@@ -837,7 +840,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         doc_id, rev, start, size, status = self.id_ind.get(
             data['_id'])  # it's cached so it's ok
         print(status)
-        if status != 'd' and status != 'u':
+        if status != b'd' and status != b'u':
             self._single_insert_index(index, data, doc_id)
 
     def reindex_index(self, index):
@@ -898,6 +901,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
             )
         _rev = self.create_new_rev()
         if '_id' not in data:
+            _id = self.id_ind.create_key()
             try:
                 _id = self.id_ind.create_key()
             except Exception:
@@ -906,6 +910,10 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         else:
             _id = data['_id']
         assert _id is not None
+        if isinstance(_id, str):
+            _id = _id.encode()
+        if isinstance(_rev, str):
+            _rev = _rev.encode()
         data['_rev'] = _rev  # for make_key_value compat with update / delete
         data['_id'] = _id
         self._insert_indexes(_rev, data)
@@ -922,18 +930,22 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
 
         :param data: data to update
         """
-        if not '_rev' in data or not '_id' in data:
+        if '_rev' not in data or '_id' not in data:
             self.__not_opened()
             raise PreconditionsException("Can't update without _rev or _id")
         _rev = data['_rev']
+        _id = data['_id']
         try:
-            _rev = bytes(_rev)
+            if isinstance(_rev, str):
+                _rev = bytes(_rev, 'utf-8')
+            if isinstance(_rev, str):
+                _id = bytes(_id, 'utf-8')
         except Exception:
             self.__not_opened()
             raise PreconditionsException(
                 "`_rev` must be valid bytes object")
         _id, new_rev = self._update_indexes(_rev, data)
-        ret = {'_id': _id, '_rev': new_rev}
+        ret = {'_id': _id, '_rev': bytes(new_rev, 'utf-8')}
         data.update(ret)
         return ret
 
@@ -948,8 +960,8 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         :param with_storage: if ``True`` data from index storage will be
             included, otherwise just metadata.
         """
-        # if not self.indexes_names.has_key(index_name):
-        #     raise DatabaseException, "Invalid index name"
+        if index_name not in self.indexes_names:
+            raise DatabaseException("Invalid index name")
 
         if isinstance(key, str):
             key = bytes(key, 'utf-8')
@@ -965,14 +977,14 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
             raise RecordNotFound(ex)
         if not start and not size:
             raise RecordNotFound("Not found")
-        elif status == 'd':
+        elif status == b'd':
             raise RecordDeleted("Deleted")
         if with_storage and size:
             storage = ind.storage
             data = storage.get(start, size, status)
         else:
-
             data = {}
+
         if with_doc and index_name != 'id':
             storage = ind.storage
             doc = self.get('id', l_key, False)
@@ -980,6 +992,10 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
                 data['doc'] = doc
             else:
                 data = {'doc': doc}
+        if not isinstance(l_key, bytes):
+            l_key = l_key.encode()
+        if not isinstance(_unk, bytes):
+            _unk = _unk.encode()
         data['_id'] = l_key
         if index_name == 'id':
             data['_rev'] = _unk
@@ -1012,6 +1028,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
             self.__not_opened()
             raise IndexNotFoundException(
                 "Index `%s` doesn't exists" % index_name)
+
         storage = ind.storage
         if start is None and end is None:
             gen = ind.get_many(key, limit, offset)
@@ -1081,6 +1098,8 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
                         doc = self.get('id', doc_id, False)
                         data['doc'] = doc
                 yield data
+            if '_deleted' in data:
+                raise Exception(data)
 
     def run(self, index_name, target_funct, *args, **kwargs):
         """
@@ -1142,13 +1161,15 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
 
         :param data: data to delete
         """
-        if not '_rev' in data or not '_id' in data:
+        if '_rev' not in data or '_id' not in data:
             raise PreconditionsException("Can't delete without _rev or _id")
         _id = data['_id']
         _rev = data['_rev']
         try:
-            _id = bytes(_id)
-            _rev = bytes(_rev)
+            if isinstance(_id, str):
+                _id = _id.encode()
+            if isinstance(_rev, str):
+                _rev = _rev.encode()
         except Exception:
             raise PreconditionsException(
                 "`_id` and `_rev` must be valid bytes object")

@@ -70,6 +70,8 @@ class Md5Index(HashIndex):
         return md5(data['name']).digest(), {}
 
     def make_key(self, key):
+        if isinstance(key, str):
+            key = key.encode()
         return md5(key).digest()
 
 
@@ -89,8 +91,8 @@ class WithAIndex(HashIndex):
         return None
 
     def make_key(self, key):
-        if not isinstance(key, str):
-            key = str(key)
+        if isinstance(key, str):
+            key = key.encode()
         return md5(key).digest()
 
 

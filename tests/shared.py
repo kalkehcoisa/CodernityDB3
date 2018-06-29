@@ -74,10 +74,7 @@ class CustomHashIndex(HashIndex):
         d = data.get('test')
         if d is None:
             return None
-        if d > 5:
-            k = 1
-        else:
-            k = 0
+        k = 1 if d > 5 else 0
         return k, dict(test=d)
 
     def make_key(self, key):
@@ -93,9 +90,14 @@ class Md5Index(HashIndex):
         super(Md5Index, self).__init__(*args, **kwargs)
 
     def make_key_value(self, data):
-        return md5(data['name']).digest(), None
+        key = data['name']
+        if not isinstance(key, bytes):
+            key = str(key).encode()
+        return md5(key).digest(), None
 
     def make_key(self, key):
+        if not isinstance(key, bytes):
+            key = str(key).encode()
         return md5(key).digest()
 
 
@@ -110,15 +112,15 @@ class WithAIndex2(HashIndex):
     def make_key_value(self, data):
         a_val = data.get("a")
         if a_val is not None:
-            if not isinstance(a_val, str):
-                a_val = str(a_val)
+            if not isinstance(a_val, bytes):
+                a_val = str(a_val).encode()
                 return md5(a_val).digest(), None
-                return None
+        return None
 
     def make_key(self, key):
-        if not isinstance(key, str):
-            key = str(key)
-            return md5(key).digest()
+        if not isinstance(key, bytes):
+            key = str(key).encode()
+        return md5(key).digest()
 
 
 class WithAIndex(HashIndex):
@@ -132,14 +134,14 @@ class WithAIndex(HashIndex):
     def make_key_value(self, data):
         a_val = data.get("a")
         if a_val is not None:
-            if not isinstance(a_val, str):
-                a_val = str(a_val)
+            if not isinstance(a_val, bytes):
+                a_val = str(a_val).encode()
             return md5(a_val).digest(), None
         return None
 
     def make_key(self, key):
-        if not isinstance(key, str):
-            key = str(key)
+        if not isinstance(key, bytes):
+            key = str(key).encode()
         return md5(key).digest()
 
 
@@ -328,12 +330,12 @@ class DB_Tests:
         db.create()
 
     def test_real_life_example_random(self, tmpdir, operations):
-
         db = self._db(os.path.join(str(tmpdir), 'db'))
-        db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                        WithAIndex(db.path, 'with_a'),
-                        CustomHashIndex(db.path, 'custom'),
-                        Simple_TreeIndex(db.path, 'tree')])
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            WithAIndex(db.path, 'with_a'),
+            CustomHashIndex(db.path, 'custom'),
+            Simple_TreeIndex(db.path, 'tree')])
         db.create()
         database_step_by_step(db)
 
@@ -360,7 +362,7 @@ class DB_Tests:
             vals = inserted.values()
             if not vals:
                 return False
-            doc = random.choice(vals)
+            doc = random.choice(tuple(vals))
             a = random.randint(0, 1000)
             doc['upd'] = a
             was = doc.get('test')
@@ -383,7 +385,7 @@ class DB_Tests:
             vals = inserted.values()
             if not vals:
                 return False
-            doc = random.choice(vals)
+            doc = random.choice(tuple(vals))
             was = doc.get('test')
             if was is not None:
                 if was > 5:
@@ -392,17 +394,15 @@ class DB_Tests:
                     self.counter['l'] -= 1
             db.delete(doc)
             del inserted[doc['_id']]
-            try:
+            if doc['_id'] in updated:
                 del updated[doc['_id']]
-            except Exception:
-                pass
             return True
 
         def _get():
             vals = inserted.values()
             if not vals:
                 return False
-            doc = random.choice(vals)
+            doc = random.choice(tuple(vals))
             got = db.get('id', doc['_id'])
             assert got == doc
             return True
@@ -415,30 +415,40 @@ class DB_Tests:
 
         def count_and_check():
             assert len(inserted) == db.count(db.all, 'id')
-            l_c = db.count(db.get_many, 'custom', key=0, limit=operations)
+            l_c = db.count(db.get_many, 'custom', key=0, limit=operations * 10000)
             r_c = db.count(db.get_many, 'custom', key=1, limit=operations)
             same = set(map(
                 lambda x: x['_id'], db.get_many('custom', key=0, limit=operations))
             ).intersection(set(map(
                 lambda x: x['_id'], db.get_many('custom', key=1, limit=operations)
             )))
+
             assert same == set()
             assert self.counter['l'] == l_c
             assert self.counter['r'] == r_c
-            assert self.counter['l'] + self.counter[
-                'r'] == db.count(db.all, 'custom')
+            assert self.counter['l'] + self.counter['r'] == db.count(db.all, 'custom')
+
+        _update()
+        count_and_check()
+        _insert()
+        count_and_check()
+        _insert()
+        count_and_check()
+        _get()
+        count_and_check()
+        _update()
+        count_and_check()
+        _delete()
+        count_and_check()
 
         fcts = (
             _insert,) * 20 + (_get,) * 10 + (_update,) * 10 + (_delete,) * 5
         for i in range(operations):
             f = random.choice(fcts)
             f()
-
-        # db.reindex()
         count_and_check()
 
         db.reindex()
-
         count_and_check()
 
         fcts = (
@@ -446,6 +456,14 @@ class DB_Tests:
         for i in range(operations):
             f = random.choice(fcts)
             f()
+
+        count_and_check()
+
+        # do them all to guarantee that all operations are executed
+        _insert()
+        _get()
+        _update()
+        _delete()
 
         count_and_check()
 
@@ -638,7 +656,7 @@ class DB_Tests:
 
         db.destroy_index(hash_index.name)
         with pytest.raises(IndexNotFoundException):
-                db.get_index_details(hash_index.name)
+            db.get_index_details(hash_index.name)
 
         new_index = Md5Index(db.path, 'my_index')
         db.add_index(new_index)

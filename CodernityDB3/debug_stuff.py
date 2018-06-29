@@ -76,10 +76,13 @@ class DebugTreeBasedIndex(TreeBasedIndex):
         print('printing data of leaf at', leaf_start_position)
         nr_of_elements = self._read_leaf_nr_of_elements(leaf_start_position)
         self.buckets.seek(leaf_start_position)
-        data = self.buckets.read(self.leaf_heading_size +
-                                 nr_of_elements * self.single_leaf_record_size)
-        leaf = struct.unpack('<' + self.leaf_heading_format +
-                             nr_of_elements * self.single_leaf_record_format, data)
+        data = self.buckets.read(
+            self.leaf_heading_size + nr_of_elements * self.single_leaf_record_size)
+        leaf = struct.unpack(
+            '<' + self.leaf_heading_format +
+            nr_of_elements * self.single_leaf_record_format,
+            data
+        )
         print(leaf)
         print('')
 
@@ -88,12 +91,14 @@ class DebugTreeBasedIndex(TreeBasedIndex):
         nr_of_elements = self._read_node_nr_of_elements_and_children_flag(
             node_start_position)[0]
         self.buckets.seek(node_start_position)
-        data = self.buckets.read(self.node_heading_size + self.pointer_size
-                                 + nr_of_elements * (self.key_size + self.pointer_size))
-        node = struct.unpack('<' + self.node_heading_format + self.pointer_format
-                             + nr_of_elements * (
-                             self.key_format + self.pointer_format),
-                             data)
+        data = self.buckets.read(
+            self.node_heading_size + self.pointer_size +
+            nr_of_elements * (self.key_size + self.pointer_size))
+        node = struct.unpack(
+            '<' + self.node_heading_format + self.pointer_format +
+            nr_of_elements * (self.key_format + self.pointer_format),
+            data
+        )
         print(node)
         print('')
 # ------------------>
@@ -136,15 +141,17 @@ def database_step_by_step(db_obj, path=None):
                 try:
                     res = f(*args, **kwargs)
                 except Exception:
-                    packed = json.dumps((funct_name,
-                                         meth_args, kwargs_copy, None))
-                    f_obj.write('%s\n' % packed)
+                    packed = json.dumps((
+                        str(funct_name), str(meth_args), str(kwargs_copy), None
+                    ))
+                    f_obj.write(b'%s\n' % packed.encode())
                     f_obj.flush()
                     raise
                 else:
-                    packed = json.dumps((funct_name,
-                                         meth_args, kwargs_copy, res))
-                f_obj.write('%s\n' % packed)
+                    packed = json.dumps((
+                        str(funct_name), str(meth_args), str(kwargs_copy), str(res)
+                    ))
+                f_obj.write(b'%s\n' % packed.encode())
                 f_obj.flush()
             else:
                 if funct_name == 'get':
@@ -152,8 +159,8 @@ def database_step_by_step(db_obj, path=None):
                         if ('delete' in curr or 'update' in curr) and not curr.startswith('test'):
                             remove_from_stack(funct_name)
                             return f(*args, **kwargs)
-                packed = json.dumps((funct_name, meth_args, kwargs_copy))
-                f_obj.write('%s\n' % packed)
+                packed = json.dumps((str(funct_name), str(meth_args), str(kwargs_copy)))
+                f_obj.write(b'%s\n' % packed.encode())
                 f_obj.flush()
                 res = f(*args, **kwargs)
             remove_from_stack(funct_name)
