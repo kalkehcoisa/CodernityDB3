@@ -25,36 +25,22 @@ def cache1lvl(maxsize=100):
 
         @functools.wraps(user_function)
         def wrapper(key, *args, **kwargs):
-            if isinstance(key, bytes):
-                key = key.decode()
-            # print("cachedddd", key) ## TODO
-            try:
-                #result = cache1lvl[key]
-                result = cache1lvl[key]
-            except KeyError:
+            # if isinstance(key, bytes):
+            #     key = key.decode()
+            if key not in cache1lvl:
                 if len(cache1lvl) == maxsize:
                     for i in range(maxsize // 10 or 1):
-                        del cache1lvl[choice(list(cache1lvl.keys()))]
-                ## print("#" * 10, key) # TODO
-                ## print(user_function) # TODO
-                ## print("cache1lvl", key, user_function) # TODO
-                ## print(cache1lvl) # TODO
+                        del cache1lvl[choice(cache1lvl.keys())]
                 cache1lvl[key] = user_function(key, *args, **kwargs)
-                ## print(cache1lvl) # TODO
-                result = cache1lvl[key]
-                ## print("result caching", result) # TODO
-#               result = user_function(obj, key, *args, **kwargs)
-            if isinstance(result, bytes):
-                result = key.decode()
-            ## print("r" * 20, result) # TODO
+            result = cache1lvl[key]
+            # if isinstance(result, bytes):
+            #     result = key.decode()
             return result
 
         def clear():
             cache1lvl.clear()
 
         def delete(key):
-            if isinstance(key, bytes):
-                key = key.decode()
             try:
                 del cache1lvl[key]
                 return True

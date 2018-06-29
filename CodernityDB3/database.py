@@ -700,6 +700,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         :param data: new data
         :param doc_id: document id
         """
+        # should_index = index.make_key_value(data)
         try:
             should_index = index.make_key_value(data)
         except Exception as ex:

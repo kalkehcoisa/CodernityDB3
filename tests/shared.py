@@ -1037,9 +1037,14 @@ class DB_Tests:
                 super(IndentedMd5Index, self).__init__(*args, **kwargs)
 
             def make_key_value(self, data):
-                return md5(data['name']).digest(), None
+                key = data['name']
+                if isinstance(key, str):
+                    key = key.encode()
+                return md5(key).digest(), None
 
             def make_key(self, key):
+                if isinstance(key, str):
+                    key = key.encode()
                 return md5(key).digest()
 
         db = self._db(os.path.join(str(tmpdir), 'db'))
