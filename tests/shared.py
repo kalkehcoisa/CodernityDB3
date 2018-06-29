@@ -627,12 +627,12 @@ class DB_Tests:
         hash_index = HashIndex(db.path, 'my_index')
         db.add_index(hash_index)
 
-        l = len(db.indexes)
+        length = len(db.indexes)
         hash_index = HashIndex(db.path, 'my_index')
         with pytest.raises(IndexException):
             db.add_index(hash_index)
 
-        assert l == len(db.indexes)
+        assert length == len(db.indexes)
 
     def test_create_index_duplicate_from_string(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
@@ -643,11 +643,11 @@ class DB_Tests:
         file_name = 'tests/index_files/04withA_index.py'
 
         db.add_index(open(file_name).read())
-        l = len(db.indexes)
+        length = len(db.indexes)
         with pytest.raises(IndexException):
             db.add_index(open(file_name).read())
 
-        assert l == len(db.indexes)
+        assert length == len(db.indexes)
 
     def test_create_with_path(self, tmpdir):
         p = os.path.join(str(tmpdir), 'db')

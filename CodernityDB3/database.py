@@ -224,6 +224,12 @@ class Database(object):
             ind_kwargs = {}
         p = os.path.join(self.path, '_indexes')
         if isinstance(new_index, str) and not new_index.startswith("path:"):
+            # clears the shebang line, if present
+            if new_index.startswith('#!'):
+                new_index = '\n'.join(filter(
+                    lambda x: not x.startswith('#!'),
+                    new_index.splitlines()
+                ))
             if len(new_index.splitlines()) < 4 or new_index.splitlines()[3] != '# inserted automatically':
                 from .indexcreator import Parser
                 par = Parser()
