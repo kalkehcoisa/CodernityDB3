@@ -577,7 +577,7 @@ for ID index. You should update that index \
         self.id_ind = None
         self.indexes_names = {}
         self._read_indexes()
-        if not 'id' in self.indexes_names:
+        if 'id' not in self.indexes_names:
             raise PreconditionsException("There must be `id` index!")
         for index in self.indexes:
             index.open_index()
@@ -661,7 +661,7 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
                         index.update_with_storage(doc_id, new_key, new_value)
                     except (ElemNotFound, DocIdNotFound):
                         # element should be in index but isn't
-                        #(propably added new index without reindex)
+                        # (propably added new index without reindex)
                         warnings.warn("""Reindex might be required for index %s""" % index.name)
             else:
                 index.delete(doc_id, old_key)
@@ -784,12 +784,14 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         :type index: :py:class:`CodernityDB3.index.Index`` instance, or string
         """
         if isinstance(index, str):
-            if not index in self.indexes_names:
+            if index not in self.indexes_names:
                 raise PreconditionsException("No index named %s" % index)
             index = self.indexes_names[index]
-        elif not index in self.indexes:
+        elif index not in self.indexes:
             self.__not_opened()
-            raise PreconditionsException("Argument must be Index instance or valid string index format")
+            raise PreconditionsException(
+                "Argument must be Index instance or valid string index format"
+            )
         if index.name == 'id':
             self.__not_opened()
             raise PreconditionsException("Id index cannot be destroyed")
@@ -810,10 +812,10 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         :type index: :py:class:`CodernityDB3.index.Index`` instance, or string
         """
         if isinstance(index, str):
-            if not index in self.indexes_names:
+            if index not in self.indexes_names:
                 raise PreconditionsException("No index named %s" % index)
             index = self.indexes_names[index]
-        elif not index in self.indexes:
+        elif index not in self.indexes:
             self.__not_opened()
             raise PreconditionsException("Argument must be Index instance or valid string index format")
         if getattr(index, 'compacting', False):
@@ -847,10 +849,10 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         :type index: :py:class:`CodernityDB3.index.Index`` instance, or string
         """
         if isinstance(index, str):
-            if not index in self.indexes_names:
+            if index not in self.indexes_names:
                 raise PreconditionsException("No index named %s" % index)
             index = self.indexes_names[index]
-        elif not index in self.indexes:
+        elif index not in self.indexes:
             self.__not_opened()
             raise PreconditionsException("Argument must be Index instance or valid string index format")
         if index.name == 'id':
@@ -891,9 +893,10 @@ you should check index code.""" % (index.name, ex), RuntimeWarning)
         if '_rev' in data:
             self.__not_opened()
             raise PreconditionsException(
-                "Can't add record with forbidden fields")
+                "Can't add record with forbidden fields"
+            )
         _rev = self.create_new_rev()
-        if not '_id' in data:
+        if '_id' not in data:
             try:
                 _id = self.id_ind.create_key()
             except Exception:

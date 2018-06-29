@@ -15,11 +15,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodernityDB3.database import Database, RecordDeleted, RecordNotFound
-from CodernityDB3.database import DatabaseException, RevConflict, DatabasePathException, DatabaseConflict, PreconditionsException, IndexConflict
+from CodernityDB3.database import (
+    Database,
+    RecordDeleted,
+    RecordNotFound
+)
+from CodernityDB3.database import (
+    DatabaseException,
+    RevConflict,
+    DatabasePathException,
+    DatabaseConflict,
+    PreconditionsException,
+    IndexConflict
+)
 
-from CodernityDB3.hash_index import HashIndex, UniqueHashIndex, MultiHashIndex
-from CodernityDB3.index import IndexException, TryReindexException, IndexNotFoundException, IndexPreconditionsException
+from CodernityDB3.hash_index import (
+    HashIndex,
+    UniqueHashIndex,
+    MultiHashIndex
+)
+from CodernityDB3.index import (
+    IndexException,
+    TryReindexException,
+    IndexNotFoundException,
+    IndexPreconditionsException
+)
 
 from CodernityDB3.tree_index import TreeBasedIndex, MultiTreeBasedIndex
 
@@ -37,6 +57,7 @@ try:
 except ImportError:
     class Counter(dict):
         'Mapping where default values are zero'
+
         def __missing__(self, key):
             return 0
 
@@ -205,8 +226,7 @@ class WithRunEdit_Index(HashIndex):
 
 class TreeMultiTest(MultiTreeBasedIndex):
 
-    custom_header = """from CodernityDB3.tree_index import MultiTreeBasedIndex
-"""
+    custom_header = """from CodernityDB3.tree_index import MultiTreeBasedIndex"""
 
     def __init__(self, *args, **kwargs):
         kwargs['key_format'] = '16s'
@@ -215,10 +235,10 @@ class TreeMultiTest(MultiTreeBasedIndex):
 
     def make_key_value(self, data):
         name = data['w']
-        l = self.__l
+        length = self.__l
         max_l = len(name)
         out = set()
-        for x in range(l - 1, max_l):
+        for x in range(length - 1, max_l):
             m = (name, )
             for y in range(0, x):
                 m += (name[y + 1:],)
@@ -397,7 +417,11 @@ class DB_Tests:
             assert len(inserted) == db.count(db.all, 'id')
             l_c = db.count(db.get_many, 'custom', key=0, limit=operations)
             r_c = db.count(db.get_many, 'custom', key=1, limit=operations)
-            same = set(map(lambda x: x['_id'], db.get_many('custom', key=0, limit=operations))).intersection(set(map(lambda x: x['_id'], db.get_many('custom', key=1, limit=operations))))
+            same = set(map(
+                lambda x: x['_id'], db.get_many('custom', key=0, limit=operations))
+            ).intersection(set(map(
+                lambda x: x['_id'], db.get_many('custom', key=1, limit=operations)
+            )))
             assert same == set()
             assert self.counter['l'] == l_c
             assert self.counter['r'] == r_c
@@ -494,6 +518,7 @@ class DB_Tests:
         for y in range(100):
             db.insert(dict(a='blah', test='blah', name=str(y), y=y))
 
+        # the inserted items must be inserted into all indexes
         for index_name in indexes_names:
             assert db.count(db.all, index_name) == 100
 

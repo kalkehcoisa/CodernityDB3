@@ -31,10 +31,8 @@ class CustomHashIndex(HashIndex):
         d = data.get('test')
         if d is None:
             return None
-        if d > 5:
-            k = 1
-        else:
-            k = 0
+        d = id(d) % 20
+        k = 1 if d > 5 else 0
         return k, dict(test=d)
 
     def make_key(self, key):

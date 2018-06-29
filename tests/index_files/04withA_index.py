@@ -27,12 +27,12 @@ class WithAIndex(HashIndex):
     def make_key_value(self, data):
         a_val = data.get("a")
         if a_val:
-            if not isinstance(a_val, str):
-                a_val = str(a_val)
+            if isinstance(a_val, str):
+                a_val = a_val.encode()
             return md5(a_val).hexdigest(), {}
         return None
 
     def make_key(self, key):
-        if not isinstance(key, str):
-            key = str(key)
+        if isinstance(key, str):
+            key = key.encode()
         return md5(key).hexdigest()
